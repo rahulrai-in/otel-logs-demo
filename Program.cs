@@ -1,9 +1,13 @@
 using System.Runtime.InteropServices;
+using Azure.Monitor.OpenTelemetry.Exporter;
 using Microsoft.AspNetCore.Mvc;
 using OpenTelemetry.Logs;
 using OpenTelemetry.Resources;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Read Azure Monitor connection string from configuration
+var azmConnectionString = builder.Configuration["AzureMonitorConnectionString"];
 
 // Define attributes for your application
 var resourceBuilder = ResourceBuilder.CreateDefault()
@@ -27,6 +31,8 @@ builder.Logging.ClearProviders()
             .SetResourceBuilder(resourceBuilder)
             // add custom processor
             .AddProcessor(new CustomLogProcessor())
+            // send logs to Azure Monitor
+            .AddAzureMonitorLogExporter(options => options.ConnectionString = azmConnectionString)
             // send logs to the console using exporter
             .AddConsoleExporter();
 
